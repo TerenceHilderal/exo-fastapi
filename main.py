@@ -1,9 +1,17 @@
 from fastapi import FastAPI
 from typing import Optional
+from pydantic import BaseModel
 
 app = FastAPI(
     title='My api'
 )
+
+
+class Item(BaseModel):
+    itemid: int
+    description: str
+    owner: Optional[str] = None
+
 
 users_db = [
     {
@@ -105,3 +113,7 @@ def get_subscription(userid):
 #         return {'subscription': user['subscription']}
 #     except IndexError:
 #         return {}
+
+@app.post('/item')
+def post_item(item: Item):
+    return item
