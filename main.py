@@ -13,6 +13,12 @@ class Item(BaseModel):
     owner: Optional[str] = None
 
 
+class User(BaseModel):
+    user_id: int
+    name: str
+    subscription: str
+
+
 users_db = [
     {
         'user_id': 1,
@@ -117,3 +123,48 @@ def get_subscription(userid):
 @app.post('/item')
 def post_item(item: Item):
     return item
+
+
+@app.put('/users')
+def put_users(user: User):
+    new_id = max(users_db, key=lambda u: u.get('user_id'))['user_id']
+    new_user = {
+        'user_id': new_id + 1,
+        'name': user.name,
+        'subscription': user.subscription
+    }
+    users_db.append(new_user)
+    return new_user
+
+
+@app.post('/users/{userid:int}')
+def post_users(user: User, userid):
+    try:
+        old_user = list(
+            filter(lambda x: x.get('user_id') == userid, users_db)
+        )[0]
+
+        users_db.remove(old_user)
+
+        old_user['name'] = user.name
+        old_user['subscription'] = user.subscription
+
+        users_db.append(old_user)
+        return old_user
+
+    except IndexError:
+        return {}
+
+
+@app.delete('/users/{userid:int}')
+def delete_users(userid):
+    try:
+        old_user = list(filter(lambda x: x.get(
+            'user_id') == userid, users_db))[0]
+        users_db.remove(old_user)
+        return {
+            'userid': userid,
+            'deleted': True
+        }
+    except IndexError:
+        return {}
